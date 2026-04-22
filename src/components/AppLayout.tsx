@@ -44,14 +44,19 @@ export function AppLayout() {
                 <NavLink to="/rewards" className={linkClass}>
                   Rewards
                 </NavLink>
+                <NavLink to="/competency-test" className={linkClass}>
+                  Competency Test
+                </NavLink>
                 {auth.permissions?.viewSubAccounts && (
                   <NavLink to="/sub-accounts" className={linkClass}>
                     Sub-Accounts
                   </NavLink>
                 )}
-                <NavLink to="/account" className={linkClass}>
-                  Account
-                </NavLink>
+                {auth.permissions?.editBtcAddress && (
+                  <NavLink to="/account" className={linkClass}>
+                    Account
+                  </NavLink>
+                )}
               </>
             ) : (
               <NavLink to="/broker-dashboard" className={linkClass}>

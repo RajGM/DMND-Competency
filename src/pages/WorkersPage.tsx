@@ -39,6 +39,10 @@ export function WorkersPage() {
         </button>
       </div>
       <div className="overflow-x-auto">
+        {workersQuery.isLoading && <p className="mb-2 text-sm text-slate-500">Loading workers...</p>}
+        {workersQuery.isError && (
+          <p className="mb-2 text-sm text-red-500">Could not load workers. Try again.</p>
+        )}
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-slate-200 dark:border-slate-700">

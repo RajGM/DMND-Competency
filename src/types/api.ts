@@ -18,6 +18,14 @@ export interface BrokerSession {
   referenceCode: string;
 }
 
+export interface SignupResponse {
+  id: string;
+  email: string;
+  role: UserRole;
+  message: string;
+  referenceCode?: string;
+}
+
 export interface HashratePoint {
   time: number;
   pplns_hashrate: number;
@@ -41,6 +49,14 @@ export interface RewardRow {
   mining_date: string;
   fee: number;
   reward: number;
+}
+
+export interface RewardsSummary {
+  today: number;
+  yesterday: number;
+  profitability: number;
+  allTime: number;
+  history: RewardRow[];
 }
 
 export interface Permissions {

@@ -11,13 +11,13 @@ const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
-    const saved = window.sessionStorage.getItem("dmnd_theme");
+    const saved = window.localStorage.getItem("dmnd_theme");
     return saved === "dark" ? "dark" : "light";
   });
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
-    window.sessionStorage.setItem("dmnd_theme", theme);
+    window.localStorage.setItem("dmnd_theme", theme);
   }, [theme]);
 
   const value = useMemo(

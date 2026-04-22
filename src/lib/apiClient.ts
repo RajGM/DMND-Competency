@@ -4,6 +4,8 @@ import {
   HashratePoint,
   MinerSession,
   Permissions,
+  RewardsSummary,
+  SignupResponse,
   SubAccount,
   Worker,
 } from "../types/api";
@@ -42,7 +44,18 @@ export const apiClient = {
       method: "POST",
       body: JSON.stringify({ email, password }),
     }),
+  registerMiner: (email: string, password: string) =>
+    request<SignupResponse>("/api/register_user", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    }),
+  registerBroker: (email: string, password: string, referenceCode?: string) =>
+    request<SignupResponse>("/api/register_broker", {
+      method: "POST",
+      body: JSON.stringify({ email, password, referenceCode }),
+    }),
   checkMinerSession: () => request<MinerSession>("/api/check_auth"),
+  checkBrokerSession: () => request<BrokerSession>("/api/broker/check_auth"),
   logout: () => request<{}>("/api/logout", { method: "POST" }),
   forgotPassword: (email: string) =>
     request<{}>("/api/forgot_password", {
@@ -88,4 +101,5 @@ export const apiClient = {
       body: JSON.stringify({ sub_account, bitcoin_address }),
     }),
   getBrokerMiners: () => request<BrokerMiner[]>("/api/broker/miners"),
+  getRewards: () => request<RewardsSummary>("/api/user/rewards"),
 };

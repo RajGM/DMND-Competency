@@ -28,6 +28,7 @@ export function DashboardPage() {
   });
 
   const live = hashrateQuery.data;
+  const hasAnyHashrate = Boolean((live?.pplns_hashrate ?? 0) + (live?.fpps_hashrate ?? 0));
 
   return (
     <div className="space-y-6">
@@ -39,6 +40,13 @@ export function DashboardPage() {
           <p className="text-2xl font-semibold">{formatHashrate(live?.fpps_hashrate ?? null)}</p>
         </Card>
       </div>
+      {!hashrateQuery.isLoading && !hasAnyHashrate && (
+        <Card title="Welcome">
+          <p className="text-sm text-slate-500">
+            No mining data yet. Connect your workers to start seeing live hashrate updates.
+          </p>
+        </Card>
+      )}
 
       <Card title="Connection Info">
         <p className="text-sm text-slate-500">URL: stratum+tcp://pool.dmnd.local</p>
@@ -47,6 +55,9 @@ export function DashboardPage() {
       </Card>
 
       <Card title="Hashrate History (6h)">
+        {historyQuery.isError && (
+          <p className="mb-3 text-sm text-red-500">Could not load hashrate history right now.</p>
+        )}
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={historyQuery.data ?? []}>

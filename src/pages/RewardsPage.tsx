@@ -1,19 +1,24 @@
+import { useQuery } from "@tanstack/react-query";
 import { Card } from "../components/Card";
-
-const rewards = {
-  today: 0.00041,
-  yesterday: 0.00039,
-  profitability: 0.0000051,
-  allTime: 1.3921,
-};
-
-const history = [
-  { mining_date: "2026-04-20", fee: 0.02, reward: 0.00041 },
-  { mining_date: "2026-04-19", fee: 0.02, reward: 0.00039 },
-  { mining_date: "2026-04-18", fee: 0.02, reward: 0.00037 },
-];
+import { apiClient } from "../lib/apiClient";
 
 export function RewardsPage() {
+  const rewardsQuery = useQuery({
+    queryKey: ["rewards"],
+    queryFn: apiClient.getRewards,
+    refetchInterval: 10 * 60 * 1000,
+  });
+
+  if (rewardsQuery.isLoading) {
+    return <Card title="Rewards">Loading rewards...</Card>;
+  }
+
+  if (rewardsQuery.isError || !rewardsQuery.data) {
+    return <Card title="Rewards">Could not load rewards right now.</Card>;
+  }
+
+  const rewards = rewardsQuery.data;
+
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-4">
@@ -32,7 +37,7 @@ export function RewardsPage() {
             </tr>
           </thead>
           <tbody>
-            {history.map((row) => (
+            {rewards.history.map((row) => (
               <tr key={row.mining_date} className="border-b border-slate-100 dark:border-slate-800">
                 <td className="py-2">{row.mining_date}</td>
                 <td>{(row.fee * 100).toFixed(2)}%</td>

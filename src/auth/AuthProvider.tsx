@@ -26,6 +26,7 @@ interface AuthContextValue extends AuthState {
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+const TAB_SESSION_KEY = "dmnd_tab_role";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({
@@ -48,15 +49,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const bootstrap = async () => {
+      const tabRole = window.sessionStorage.getItem(TAB_SESSION_KEY);
+      if (tabRole !== "miner" && tabRole !== "broker") {
+        setState((prev) => ({ ...prev, checking: false }));
+        return;
+      }
       try {
-        const miner = await apiClient.checkMinerSession();
-        setState({
-          role: "miner",
-          miner,
-          broker: null,
-          permissions: null,
-          checking: false,
-        });
+        if (tabRole === "miner") {
+          const miner = await apiClient.checkMinerSession();
+          setState({
+            role: "miner",
+            miner,
+            broker: null,
+            permissions: null,
+            checking: false,
+          });
+        } else {
+          const broker = await apiClient.checkBrokerSession();
+          setState({
+            role: "broker",
+            miner: null,
+            broker,
+            permissions: null,
+            checking: false,
+          });
+        }
       } catch {
         setState((prev) => ({ ...prev, checking: false }));
       }
@@ -70,6 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginMiner = useCallback(async (email: string, password: string) => {
     const miner = await apiClient.minerLogin(email, password);
+    window.sessionStorage.setItem(TAB_SESSION_KEY, "miner");
     setState({
       role: "miner",
       miner,
@@ -81,6 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginBroker = useCallback(async (email: string, password: string) => {
     const broker = await apiClient.brokerLogin(email, password);
+    window.sessionStorage.setItem(TAB_SESSION_KEY, "broker");
     setState({
       role: "broker",
       miner: null,
@@ -94,6 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await apiClient.logout();
     } finally {
+      window.sessionStorage.removeItem(TAB_SESSION_KEY);
       setState({
         role: null,
         miner: null,

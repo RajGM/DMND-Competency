@@ -49,6 +49,9 @@ export function BrokerLoginPage() {
         <Link to="/login" className="mt-3 inline-block text-sm text-blue-500">
           Back to miner login
         </Link>
+        <Link to="/broker/signup" className="mt-2 block text-sm text-blue-500">
+          New broker? Signup (mock)
+        </Link>
       </form>
     </div>
   );
