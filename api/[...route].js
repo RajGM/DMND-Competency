@@ -10,10 +10,16 @@ const {
 } = require("./_lib/mockData");
 const { setSession, clearSession, getSession } = require("./_lib/session");
 
-function normalizeRoute(queryRoute) {
-  if (Array.isArray(queryRoute)) return `/${queryRoute.join("/")}`;
-  if (typeof queryRoute === "string") return `/${queryRoute}`;
-  return "/";
+function normalizeRoute(req) {
+  const queryRoute = req?.query?.route;
+  if (Array.isArray(queryRoute) && queryRoute.length > 0) return `/${queryRoute.join("/")}`;
+  if (typeof queryRoute === "string" && queryRoute.length > 0) return `/${queryRoute}`;
+
+  // Fallback for environments where catch-all query params are not populated.
+  const pathname = String(req.url || "").split("?")[0];
+  if (pathname.startsWith("/api/")) return pathname.slice(4) || "/";
+  if (pathname === "/api") return "/";
+  return pathname || "/";
 }
 
 function sendJson(res, status, body) {
@@ -35,7 +41,7 @@ function requireRole(req, res, role) {
 }
 
 module.exports = async function handler(req, res) {
-  const route = normalizeRoute(req.query.route);
+  const route = normalizeRoute(req);
 
   if (route === "/health" && req.method === "GET") {
     return sendJson(res, 200, { ok: true, now: Date.now() });
