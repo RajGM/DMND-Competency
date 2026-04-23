@@ -9,6 +9,7 @@ const {
   buildMockWorkers,
 } = require("./_lib/mockData");
 const { setSession, clearSession, getSession } = require("./_lib/session");
+const DEFAULT_ALLOWED_ORIGIN = process.env.FRONTEND_ORIGIN || "https://dmnd-competency-kappa.vercel.app";
 
 function normalizeRoute(req) {
   const queryRoute = req?.query?.route;
@@ -26,6 +27,26 @@ function sendJson(res, status, body) {
   res.status(status).json(body);
 }
 
+function applyCors(req, res) {
+  const requestOrigin = req.headers.origin;
+  const allowAny = !DEFAULT_ALLOWED_ORIGIN || DEFAULT_ALLOWED_ORIGIN === "*";
+  const allowedOrigin = allowAny ? requestOrigin || "*" : DEFAULT_ALLOWED_ORIGIN;
+
+  res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Vary", "Origin");
+}
+
+function getCookieOptions(req) {
+  const requestOrigin = req.headers.origin || "";
+  if (requestOrigin) {
+    return { sameSite: "None", secure: true };
+  }
+  return { sameSite: "Lax", secure: true };
+}
+
 function requireRole(req, res, role) {
   const session = getSession(req);
   if (!session || session.role !== role) {
@@ -41,6 +62,11 @@ function requireRole(req, res, role) {
 }
 
 module.exports = async function handler(req, res) {
+  applyCors(req, res);
+  if (req.method === "OPTIONS") {
+    return res.status(204).end();
+  }
+
   const route = normalizeRoute(req);
 
   if (route === "/health" && req.method === "GET") {
@@ -105,7 +131,7 @@ module.exports = async function handler(req, res) {
     if (!user || user.passwordHash !== hash(String(password || ""))) {
       return sendJson(res, 401, { error: "invalid credentials" });
     }
-    setSession(res, { role: "miner", userId: user.id, issuedAt: Date.now() });
+    setSession(res, { role: "miner", userId: user.id, issuedAt: Date.now() }, getCookieOptions(req));
     return sendJson(res, 200, createMinerPayload(user));
   }
 
@@ -117,7 +143,7 @@ module.exports = async function handler(req, res) {
     if (!user || user.passwordHash !== hash(String(password || ""))) {
       return sendJson(res, 401, { error: "invalid credentials" });
     }
-    setSession(res, { role: "broker", userId: user.id, issuedAt: Date.now() });
+    setSession(res, { role: "broker", userId: user.id, issuedAt: Date.now() }, getCookieOptions(req));
     return sendJson(res, 200, createBrokerPayload(user));
   }
 
@@ -134,7 +160,7 @@ module.exports = async function handler(req, res) {
   }
 
   if (route === "/logout" && req.method === "POST") {
-    clearSession(res);
+    clearSession(res, getCookieOptions(req));
     return sendJson(res, 200, {});
   }
 

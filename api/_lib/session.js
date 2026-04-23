@@ -23,18 +23,22 @@ function decodeSession(value) {
   }
 }
 
-function setSession(res, payload) {
+function setSession(res, payload, options = {}) {
   const value = encodeSession(payload);
+  const sameSite = options.sameSite || "Lax";
+  const secure = Boolean(options.secure);
   res.setHeader(
     "Set-Cookie",
-    `${SESSION_COOKIE}=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400`
+    `${SESSION_COOKIE}=${value}; Path=/; HttpOnly; SameSite=${sameSite}; Max-Age=86400${secure ? "; Secure" : ""}`
   );
 }
 
-function clearSession(res) {
+function clearSession(res, options = {}) {
+  const sameSite = options.sameSite || "Lax";
+  const secure = Boolean(options.secure);
   res.setHeader(
     "Set-Cookie",
-    `${SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`
+    `${SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=${sameSite}; Max-Age=0${secure ? "; Secure" : ""}`
   );
 }
 
