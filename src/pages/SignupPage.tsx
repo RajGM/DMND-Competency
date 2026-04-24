@@ -1,8 +1,9 @@
 import { FormEvent, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { apiClient } from "../lib/apiClient";
 
 export function SignupPage() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState("");
@@ -13,6 +14,7 @@ export function SignupPage() {
     try {
       const result = await apiClient.registerMiner(email, password);
       setStatus(result.message);
+      navigate("/login", { replace: true });
     } catch {
       setStatus("Signup failed. Try a different email.");
     }

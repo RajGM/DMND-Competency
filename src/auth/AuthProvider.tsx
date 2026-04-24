@@ -23,6 +23,7 @@ interface AuthContextValue extends AuthState {
   loginBroker: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshPermissions: () => Promise<void>;
+  refreshMinerSession: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -124,9 +125,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const refreshMinerSession = useCallback(async () => {
+    if (state.role !== "miner") return;
+    const miner = await apiClient.checkMinerSession();
+    setState((prev) => ({ ...prev, miner }));
+  }, [state.role]);
+
   const value = useMemo(
-    () => ({ ...state, loginMiner, loginBroker, logout, refreshPermissions }),
-    [state, loginMiner, loginBroker, logout, refreshPermissions]
+    () => ({ ...state, loginMiner, loginBroker, logout, refreshPermissions, refreshMinerSession }),
+    [state, loginMiner, loginBroker, logout, refreshPermissions, refreshMinerSession]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

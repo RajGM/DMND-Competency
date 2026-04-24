@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { AppLayout } from "./components/AppLayout";
-import { AuthGate, RoleGate } from "./auth/guards";
+import { AuthGate, BitcoinAddressGate, RoleGate } from "./auth/guards";
 import { BrokerDashboardPage } from "./pages/BrokerDashboardPage";
 import { BrokerLoginPage } from "./pages/BrokerLoginPage";
 import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
@@ -14,6 +14,7 @@ import { RewardsPage } from "./pages/RewardsPage";
 import { AccountPage } from "./pages/AccountPage";
 import { SubAccountsPage } from "./pages/SubAccountsPage";
 import { CompetencyTestPage } from "./pages/CompetencyTestPage";
+import { BitcoinSetupPage } from "./pages/BitcoinSetupPage";
 
 export function App() {
   return (
@@ -36,48 +37,68 @@ export function App() {
         <Route
           index
           element={
-            <RoleGate role="miner">
-              <DashboardPage />
-            </RoleGate>
+            <BitcoinAddressGate>
+              <RoleGate role="miner">
+                <DashboardPage />
+              </RoleGate>
+            </BitcoinAddressGate>
           }
         />
         <Route
           path="workers"
           element={
-            <RoleGate role="miner">
-              <WorkersPage />
-            </RoleGate>
+            <BitcoinAddressGate>
+              <RoleGate role="miner">
+                <WorkersPage />
+              </RoleGate>
+            </BitcoinAddressGate>
           }
         />
         <Route
           path="rewards"
           element={
-            <RoleGate role="miner">
-              <RewardsPage />
-            </RoleGate>
+            <BitcoinAddressGate>
+              <RoleGate role="miner">
+                <RewardsPage />
+              </RoleGate>
+            </BitcoinAddressGate>
           }
         />
         <Route
           path="account"
           element={
-            <RoleGate role="miner">
-              <AccountPage />
-            </RoleGate>
+            <BitcoinAddressGate>
+              <RoleGate role="miner">
+                <AccountPage />
+              </RoleGate>
+            </BitcoinAddressGate>
           }
         />
         <Route
           path="sub-accounts"
           element={
-            <RoleGate role="miner">
-              <SubAccountsPage />
-            </RoleGate>
+            <BitcoinAddressGate>
+              <RoleGate role="miner">
+                <SubAccountsPage />
+              </RoleGate>
+            </BitcoinAddressGate>
           }
         />
         <Route
           path="competency-test"
           element={
+            <BitcoinAddressGate>
+              <RoleGate role="miner">
+                <CompetencyTestPage />
+              </RoleGate>
+            </BitcoinAddressGate>
+          }
+        />
+        <Route
+          path="setup-bitcoin"
+          element={
             <RoleGate role="miner">
-              <CompetencyTestPage />
+              <BitcoinSetupPage />
             </RoleGate>
           }
         />

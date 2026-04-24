@@ -1,5 +1,5 @@
 import React from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "./AuthProvider";
 import { UserRole } from "../types/api";
 
@@ -24,6 +24,16 @@ export function RoleGate({
   const auth = useAuth();
   if (auth.role !== role) {
     return <Navigate to={auth.role === "broker" ? "/broker-dashboard" : "/"} replace />;
+  }
+  return children;
+}
+
+export function BitcoinAddressGate({ children }: { children: React.ReactElement }) {
+  const { role, miner } = useAuth();
+  const location = useLocation();
+  const needsBitcoinAddress = role === "miner" && !miner?.bitcoin_address;
+  if (needsBitcoinAddress && location.pathname !== "/setup-bitcoin") {
+    return <Navigate to="/setup-bitcoin" replace />;
   }
   return children;
 }
