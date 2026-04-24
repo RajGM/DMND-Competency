@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   CartesianGrid,
@@ -27,21 +27,35 @@ async function fetchBtcPrice(): Promise<number> {
 
 export function CompetencyTestPage() {
   const { theme } = useTheme();
+  const [history, setHistory] = useState<PricePoint[]>([]);
   const priceQuery = useQuery({
     queryKey: ["competency-bitcoin-price"],
     queryFn: fetchBtcPrice,
     refetchInterval: 60_000,
   });
 
-  const history = useMemo<PricePoint[]>(() => {
-    const now = Date.now();
-    const current = priceQuery.data ?? 0;
-    // Keep 12 sample points for chart visibility in demo.
-    return Array.from({ length: 12 }).map((_, index) => ({
-      time: now - (11 - index) * 60_000,
-      usd: current > 0 ? current - (11 - index) * 20 : 0,
-    }));
-  }, [priceQuery.data]);
+  useEffect(() => {
+    if (typeof priceQuery.data !== "number" || Number.isNaN(priceQuery.data)) return;
+    const sampleTime = priceQuery.dataUpdatedAt || Date.now();
+    setHistory((prev) => {
+      const next = [...prev, { time: sampleTime, usd: priceQuery.data }];
+      // Keep latest 60 minutes of points.
+      return next.slice(-60);
+    });
+  }, [priceQuery.data, priceQuery.dataUpdatedAt]);
+
+  const yDomain = useMemo<[number, number]>(() => {
+    if (history.length === 0) return [0, 1];
+    const values = history.map((point) => point.usd);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    if (min === max) {
+      const pad = Math.max(1, min * 0.005);
+      return [min - pad, max + pad];
+    }
+    const pad = (max - min) * 0.08;
+    return [Math.max(0, min - pad), max + pad];
+  }, [history]);
 
   return (
     <div className="space-y-6">
@@ -60,7 +74,7 @@ export function CompetencyTestPage() {
             <LineChart data={history}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="time" tickFormatter={(value) => new Date(value).toLocaleTimeString()} />
-              <YAxis />
+              <YAxis domain={yDomain} />
               <Tooltip
                 labelFormatter={(value) => new Date(Number(value)).toLocaleTimeString()}
                 formatter={(value) => `$${Number(value).toLocaleString()}`}
